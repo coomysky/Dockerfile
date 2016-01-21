@@ -6,6 +6,11 @@ FROM ubuntu:14.04
 MAINTAINER Coomy Chang <coomysky@gmail.com>
 
 
+##### Adjust time zone
+RUN echo "Asia/Taipei" > /etc/timezone
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+
+
 ##### System update and install
 RUN apt-get update -qq && apt-get upgrade -qq
 RUN apt-get install -qqy openssh-server screen vim git curl
