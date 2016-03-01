@@ -18,7 +18,7 @@ RUN echo "[[ -s $HOME/.nvm/nvm.sh ]] && . $HOME/.nvm/nvm.sh" >> $HOME/.bashrc
 
 
 ##### Environment
-ENV PATH /home/coomy/.nvm/bin:$PATH
+ENV PATH /home/ubuntu/.nvm/bin:$PATH
 RUN mkdir -p $HOME/code
 
 COPY run.bash $HOME/start/
@@ -27,4 +27,4 @@ COPY run.bash $HOME/start/
 RUN sudo apt-get clean
 RUN sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-CMD ["/bin/bash", "/home/coomy/start/run.bash"]
+CMD ["/bin/bash", "/home/ubuntu/start/run.bash"]
