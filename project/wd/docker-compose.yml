@@ -26,9 +26,9 @@ services:
             - MYSQL_USER=wd
             - MYSQL_PASSWORD=wdpass
         ports:
-            3306:3306
+            - 3306:3306
         volumes:
-            - mysql:/var/lib/mysql
+            - ./mysql:/var/lib/mysql
 
     service_wd_php:
         image:
@@ -46,9 +46,9 @@ services:
         networks:
             - wd_network
         volumes:
-            - php:/var/project
+            - ./php:/var/project
         working_dir:
-            - /var/project
+            /var/project
 
     service_wd_nginx:
         image:
@@ -60,8 +60,8 @@ services:
         networks:
             - wd_network
         volumes:
-            - php:/var/project 
-            - nginx/default.conf:/etc/nginx/conf.d/default.conf
+            - ./php:/var/project 
+            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
         ports:
             - "80:80"
 
