@@ -1,7 +1,10 @@
 #
 # coomy/develop:php5-6
 #
+MAINTAINER Coomy Chang <coomysky@gmail.com>
+
 FROM php:5.6-fpm
+
 RUN docker-php-ext-install -j$(nproc) pdo_mysql
 RUN docker-php-ext-install -j$(nproc) mbstring
 RUN docker-php-ext-install -j$(nproc) tokenizer
