@@ -1,63 +1,38 @@
-postgresql:
+dev_queue:
+  container_name: dev_queue
   restart: always
-  image: sameersbn/postgresql:9.4-14
-  environment:
-    - DB_USER=gitlab
-    - DB_PASS=password
-    - DB_NAME=gitlabhq_production
-  volumes:
-      - $HOME/Docker/volume/gitlab/postgresql:/var/lib/postgresql
-gitlab:
+  image: kdihalas/beanstalkd:latest
+dev_mysql:
+  container_name: dev_mysql
   restart: always
-  image: sameersbn/gitlab:8.5.7
-  links:
-    - redis:redisio
-    - postgresql:postgresql
+  image: mysql/mysql-server:5.6
   ports:
-    - "10080:80"
-    - "10022:22"
+    - "3306:3306"
   environment:
-    - DEBUG=false
-    - TZ=Asia/Kolkata
-    - GITLAB_TIMEZONE=Kolkata
-
-    - GITLAB_SECRETS_DB_KEY_BASE=long-and-random-alphanumeric-string
-
-    - GITLAB_HOST=localhost
-    - GITLAB_PORT=10080
-    - GITLAB_SSH_PORT=10022
-    - GITLAB_RELATIVE_URL_ROOT=
-
-    - GITLAB_NOTIFY_ON_BROKEN_BUILDS=true
-    - GITLAB_NOTIFY_PUSHER=false
-
-    - GITLAB_EMAIL=notifications@example.com
-    - GITLAB_EMAIL_REPLY_TO=noreply@example.com
-    - GITLAB_INCOMING_EMAIL_ADDRESS=reply@example.com
-
-    - GITLAB_BACKUP_SCHEDULE=daily
-    - GITLAB_BACKUP_TIME=01:00
-
-    - SMTP_ENABLED=false
-    - SMTP_DOMAIN=www.example.com
-    - SMTP_HOST=smtp.gmail.com
-    - SMTP_PORT=587
-    - SMTP_USER=coomysky@gmail.com
-    - SMTP_PASS=coomy9demon
-    - SMTP_STARTTLS=true
-    - SMTP_AUTHENTICATION=login
-
-    - IMAP_ENABLED=false
-    - IMAP_HOST=imap.gmail.com
-    - IMAP_PORT=993
-    - IMAP_USER=mailer@example.com
-    - IMAP_PASS=password
-    - IMAP_SSL=true
-    - IMAP_STARTTLS=false
-  volumes:
-    - $HOME/Docker/volume/gitlab/gitlab:/home/git/data
-redis:
+    - MYSQL_ROOT_PASSWORD=ubuntu
+    - MYSQL_USER=root
+    - MYSQL_PASSWORD=ubuntu
+dev_phpfpm:
+  container_name: dev_phpfpm
   restart: always
-  image: sameersbn/redis:latest
+  image: coomy/develop:php5-6
+  links:
+    - dev_mysql:db
+    - dev_queue:queue
+  environment:
+    - DB_HOST=dev_mysql
+    - BEANSTALKD_HOST=dev_queue
   volumes:
-    - $HOME/Docker/volume/gitlab/redis:/var/lib/redis
+    - $HOME/Docker/code:/var/project
+  working_dir: /var/project
+dev_nginx:
+  container_name: dev_nginx
+  restart: always
+  image: nginx:1.9.6
+  ports:
+    - "80:80"
+  links:
+    - dev_phpfpm:phpfpm
+  volumes:
+    - $HOME/Docker/volume/nginx/conf:/etc/nginx/conf.d/default.conf
+    - $HOME/Docker/code:/var/project
