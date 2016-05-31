@@ -1,21 +1,38 @@
 version: '2'
 
 services:
-    service_wd_beanstalk:
+    nginx_php:
         image:
-            coomy/beanstalk:1.10
+            coomy/nginx:php5.5.9
         container_name:
-            wd_queue
+            wd_nginx_php
+        hostname:
+            nginx-php5
         restart:
             always
         networks:
             - wd_network
+        stdin_open:
+            true
+        tty:
+            true
+        volumes:
+            - ~/Docker/code:/usr/share/nginx/html/
+            - ~/Docker/log:/var/log/nginx
+        command:
+            bash
+        ports:
+            - "80:80"
+        working_dir:
+            /usr/share/nginx/html/
 
     service_wd_mysql:
         image:
-            mysql
+            mysql:latest
         container_name:
             wd_mysql
+        hostname:
+            mysql
         restart:
             always
         networks:
@@ -27,46 +44,51 @@ services:
             - MYSQL_PASSWORD=wdpass
         ports:
             - 3306:3306
-        volumes:
-            - ./mysql:/var/lib/mysql
+        command:
+            mysqld
 
-    service_wd_php:
+    service_node:
         image:
-            coomy/php:5.6-fpm
+            coomy/develop:node
         container_name:
-            wd_php
+            wd_dev_node
+        hostname:
+            dev_node
         restart:
             always
-        depends_on:
-            - service_wd_mysql
-            - service_wd_beanstalk
+
         environment:
-            - DB_HOST=wd_mysql
-            - BEANSTALKD_HOST=wd_queue
+            - NODE_PACKAGE="gulp bower"
         networks:
             - wd_network
         volumes:
-            - ./php:/var/project
-        working_dir:
-            /var/project
+            - ~/Docker/code:$HOME/code
+        ports:
+            - "33:22"
+            - "3000:3000"
+        command:
+            /bin/bash
+            /home/ubuntu/start/run.bash
 
-    service_wd_nginx:
+    service_phpmyadmin:
         image:
-            nginx
+            phpmyadmin/phpmyadmin:latest
         container_name:
-            wd_nginx
+            wd_phpMyAdmin
+
         restart:
             always
+
         networks:
             - wd_network
-        volumes:
-            - ./php:/var/project 
-            - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+        links:
+            - service_wd_mysql:pma_db
+        environment:
+            - PMA_HOST=mysql
         ports:
-            - "80:80"
+            - "8080:80"
 
 networks:
     wd_network:
         driver:
             bridge
-
